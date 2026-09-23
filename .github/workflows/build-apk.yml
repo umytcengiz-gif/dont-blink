@@ -17,6 +17,38 @@ jobs:
           mkdir project
           unzip -q DONT_BLINK_Android_Project_PC_YOK.zip -d project
 
+      - name: Fix Android Gradle configuration
+        working-directory: project
+        run: |
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+              id 'org.jetbrains.kotlin.android'
+          }
+
+          android {
+              namespace 'com.dontblink.game'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId 'com.dontblink.game'
+                  minSdk 24
+                  targetSdk 35
+                  versionCode 1
+                  versionName '1.0'
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = '17'
+              }
+          }
+          EOF
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -30,7 +62,8 @@ jobs:
 
       - name: Build APK
         working-directory: project
-        run: gradle --no-daemon assembleDebug
+        run: |
+          gradle --no-daemon assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
