@@ -3,6 +3,9 @@ name: Build DON'T BLINK APK
 on:
   workflow_dispatch:
   push:
+    paths:
+      - 'DONT_BLINK_Android_Project_PC_YOK.zip'
+      - '.github/workflows/build-apk.yml'
 
 jobs:
   build:
@@ -14,40 +17,9 @@ jobs:
 
       - name: Unpack Android project
         run: |
+          rm -rf project
           mkdir project
           unzip -q DONT_BLINK_Android_Project_PC_YOK.zip -d project
-
-      - name: Fix Android Gradle configuration
-        working-directory: project
-        run: |
-          cat > app/build.gradle <<'EOF'
-          plugins {
-              id 'com.android.application'
-              id 'org.jetbrains.kotlin.android'
-          }
-
-          android {
-              namespace 'com.dontblink.game'
-              compileSdk 35
-
-              defaultConfig {
-                  applicationId 'com.dontblink.game'
-                  minSdk 24
-                  targetSdk 35
-                  versionCode 1
-                  versionName '1.0'
-              }
-
-              compileOptions {
-                  sourceCompatibility JavaVersion.VERSION_17
-                  targetCompatibility JavaVersion.VERSION_17
-              }
-
-              kotlinOptions {
-                  jvmTarget = '17'
-              }
-          }
-          EOF
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -63,7 +35,7 @@ jobs:
       - name: Build APK
         working-directory: project
         run: |
-          gradle --no-daemon assembleDebug
+          gradle --no-daemon --stacktrace assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
